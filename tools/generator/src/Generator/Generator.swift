@@ -46,7 +46,7 @@ class Generator {
         extensionPointIdentifiers: [TargetID: ExtensionPointIdentifier],
         directories: Directories,
         outputPath: Path
-    ) throws {
+    ) async throws {
         let pbxProj = environment.createProject(
             buildMode,
             forFixtures,
@@ -174,7 +174,7 @@ class Generator {
         let sharedData = environment.createXCSharedData(schemes)
 
         let xcodeProj = environment.createXcodeProj(pbxProj, sharedData)
-        try environment.writeXcodeProj(
+        try await environment.writeXcodeProj(
             xcodeProj,
             directories,
             files,

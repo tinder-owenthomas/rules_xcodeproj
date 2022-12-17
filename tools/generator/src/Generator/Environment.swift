@@ -127,5 +127,5 @@ struct Environment {
         _ directories: Directories,
         _ files: [FilePath: File],
         _ outputPath: Path
-    ) throws -> Void
+    ) async throws -> Void
 }
