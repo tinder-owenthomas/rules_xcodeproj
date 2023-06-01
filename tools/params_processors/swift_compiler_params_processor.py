@@ -49,7 +49,7 @@ _SWIFTC_SKIP_OPTS = {
     "-vfsoverlay": 2,
     "-whole-module-optimization": 1,
     "-wmo": 1,
-
+    "-Xcc": 2,
 
     # We filter out `-Xfrontend`, then add it back only if the current opt
     # wasn't filtered out
@@ -78,125 +78,9 @@ _SWIFTC_SKIP_COMPOUND_OPTS = {
     },
 }
 
-_CLANG_SEARCH_PATHS = {
-    "-iquote": None,
-    "-isystem": None,
-    "-I": None,
-}
 
-
-def _is_relative_path(path: str) -> bool:
-    return not path.startswith("/") and not path.startswith("__BAZEL_")
-
-
-def _process_clang_opt(
-        opt: str,
-        is_clang_opt: bool,
-        previous_opt: str,
-        previous_clang_opt: str) -> Optional[str]:
-    if opt == "-Xcc":
-        return opt
-
-    if opt.startswith("-fmodule-map-file="):
-        path = opt[18:]
-        is_relative = _is_relative_path(path)
-        if is_clang_opt or is_relative:
-            if path == ".":
-                bwx_opt = "-fmodule-map-file=$(PROJECT_DIR)"
-            elif is_relative:
-                bwx_opt = "-fmodule-map-file=$(PROJECT_DIR)/" + path
-            else:
-                bwx_opt = opt
-            return bwx_opt
-        return opt
-    if opt.startswith("-iquote"):
-        path = opt[7:]
-        if not path:
-            return opt
-        is_relative = _is_relative_path(path)
-        if is_clang_opt or is_relative:
-            if path == ".":
-                bwx_opt = "-iquote$(PROJECT_DIR)"
-            elif is_relative:
-                bwx_opt = "-iquote$(PROJECT_DIR)/" + path
-            else:
-                bwx_opt = opt
-            return bwx_opt
-        return opt
-    if opt.startswith("-I"):
-        path = opt[2:]
-        if not path:
-            return opt
-        is_relative = _is_relative_path(path)
-        if is_clang_opt or is_relative:
-            if path == ".":
-                bwx_opt = "-I$(PROJECT_DIR)"
-            elif is_relative:
-                bwx_opt = "-I$(PROJECT_DIR)/" + path
-            else:
-                bwx_opt = opt
-            return bwx_opt
-        return opt
-    if opt.startswith("-F"):
-        path = opt[2:]
-        if not path:
-            return opt
-        is_relative = _is_relative_path(path)
-        if is_clang_opt or is_relative:
-            if path == ".":
-                bwx_opt = "-F$(PROJECT_DIR)"
-            elif is_relative:
-                bwx_opt = "-F$(PROJECT_DIR)/" + path
-            else:
-                bwx_opt = opt
-            return bwx_opt
-        return opt
-    if opt.startswith("-isystem"):
-        path = opt[8:]
-        if not path:
-            return opt
-        is_relative = _is_relative_path(path)
-        if is_clang_opt or is_relative:
-            if path == ".":
-                bwx_opt = "-isystem$(PROJECT_DIR)"
-            elif is_relative:
-                bwx_opt = "-isystem$(PROJECT_DIR)/" + path
-            else:
-                bwx_opt = opt
-            return bwx_opt
-        return opt
-    if (previous_opt in _CLANG_SEARCH_PATHS or
-        previous_clang_opt in _CLANG_SEARCH_PATHS):
-        if opt == ".":
-            bwx_opt = "$(PROJECT_DIR)"
-        elif _is_relative_path(opt):
-            bwx_opt = "$(PROJECT_DIR)/" + opt
-        else:
-            bwx_opt = opt
-        return bwx_opt
-    if is_clang_opt:
-        # -ivfsoverlay doesn't apply `-working_directory=`, so we need to
-        # prefix it ourselves
-        if previous_clang_opt == "-ivfsoverlay":
-            if opt[0] != "/":
-                opt = "$(PROJECT_DIR)/" + opt
-        elif opt.startswith("-ivfsoverlay"):
-            value = opt[12:]
-            if not value.startswith("/"):
-                opt = "-ivfsoverlay$(PROJECT_DIR)/" + value
-        return opt
-
-    return None
-
-
-def _inner_process_swiftcopts(
-        *,
-        opt: str,
-        previous_opt: str,
-        previous_clang_opt: str) -> Optional[str]:
-    is_clang_opt = opt == "-Xcc" or previous_opt == "-Xcc"
-
-    if not is_clang_opt and (previous_opt == "-I" or opt.startswith("-I") or
+def _inner_process_swiftcopts(*, opt: str, previous_opt: str) -> Optional[str]:
+    if (previous_opt == "-I" or opt.startswith("-I") or
         previous_opt == "-F" or opt.startswith("-F")):
         # BwX Swift include paths are set in `xcode_targets.bzl`
         # `_set_swift_include_paths`, and BwB include paths are set in
@@ -206,15 +90,6 @@ def _inner_process_swiftcopts(
     if opt.startswith("-vfsoverlay"):
         # Handled in opts.bzl
         return None
-
-    clang_opt = _process_clang_opt(
-        opt = opt,
-        is_clang_opt = is_clang_opt,
-        previous_opt = previous_opt,
-        previous_clang_opt = previous_clang_opt,
-    )
-    if clang_opt:
-        return clang_opt
 
     if opt[0] != "-" and opt.endswith(".swift"):
         # These are the files to compile, not options. They are seen here
@@ -232,7 +107,6 @@ def process_args(params_paths: List[str], parse_args) -> List[str]:
 
     processed_opts = []
     next_previous_opt = None
-    previous_clang_opt = None
     for params_path in params_paths:
         opts_iter = parse_args(params_path)
 
@@ -289,18 +163,12 @@ def process_args(params_paths: List[str], parse_args) -> List[str]:
             processed_opt = _inner_process_swiftcopts(
                 opt = opt,
                 previous_opt = previous_opt,
-                previous_clang_opt = previous_clang_opt,
             )
 
             if processed_opt and is_frontend_opt:
                 # We filter out `-Xfrontend`, then add it back only if the
                 # current opt wasn't filtered out
                 processed_opts.append(previous_opt)
-
-            if previous_opt == "-Xcc":
-                previous_clang_opt = opt
-            elif opt != "-Xcc":
-                previous_clang_opt = None
 
             opt = processed_opt
             if not opt:
