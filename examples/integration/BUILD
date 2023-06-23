@@ -82,3 +82,35 @@ string_flag(
         "x86_64",
     ]
 ]
+
+
+[
+    xcodeproj(
+        name = "xcodeproj-{}_cat".format(simulator_cpu),
+        associated_extra_files = ASSOCIATED_EXTRA_FILES,
+        bazel_env = BAZEL_ENV,
+        build_mode = "xcode",
+        config = CONFIG,
+        default_xcode_configuration = DEFAULT_XCODE_CONFIGURATION,
+        extra_files = EXTRA_FILES,
+        fail_for_invalid_extra_files_targets = FAIL_FOR_INVALID_EXTRA_FILES_TARGETS,
+        ios_simulator_cpus = simulator_cpu,
+        pre_build = PRE_BUILD,
+        project_name = "Integration_cat",
+        project_options = PROJECT_OPTIONS,
+        scheme_autogeneration_mode = SCHEME_AUTOGENERATION_MODE,
+        schemes = get_xcode_schemes(),
+        tags = ["manual"],
+        top_level_targets = XCODEPROJ_TARGETS,
+        tvos_simulator_cpus = simulator_cpu,
+        unfocused_targets = UNFOCUSED_TARGETS,
+    use_experimental_incremental = True,
+        # watchOS Simulator CPU on Apple silicon doesn't have 'sim_' prefix
+        watchos_simulator_cpus = simulator_cpu.removeprefix("sim_"),
+        xcode_configurations = XCODE_CONFIGURATIONS,
+    )
+    for simulator_cpu in [
+        "sim_arm64",
+        "x86_64",
+    ]
+]

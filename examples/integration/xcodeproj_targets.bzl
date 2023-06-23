@@ -109,10 +109,10 @@ XCODEPROJ_TARGETS = [
     "//tvOSApp/Test/UnitTests:tvOSAppUnitTests",
     "//watchOSApp/Test/UITests:watchOSAppUITests",
     "//watchOSAppExtension/Test/UnitTests:watchOSAppExtensionUnitTests",
-    "//iOSApp/Test:iOSAppTestSuite",
-    "//iOSApp/Test/UITests:iOSAppUITestSuite",
-    "//iOSApp/Test/ObjCUnitTests:iOSAppObjCUnitTestSuite",
-    "//iOSApp/Test/SwiftUnitTests:iOSAppSwiftUnitTestSuite",
+    # "//iOSApp/Test:iOSAppTestSuite",
+    # "//iOSApp/Test/UITests:iOSAppUITestSuite",
+    # "//iOSApp/Test/ObjCUnitTests:iOSAppObjCUnitTestSuite",
+    # "//iOSApp/Test/SwiftUnitTests:iOSAppSwiftUnitTestSuite",
 ]
 
 IOS_BUNDLE_ID = "rules-xcodeproj.example"
