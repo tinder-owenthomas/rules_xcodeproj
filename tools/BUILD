@@ -5,6 +5,7 @@ load("//xcodeproj/internal:collections.bzl", "flatten", "uniq")
 
 _TOOLS = {
     "files_and_groups": "//tools/generators/files_and_groups",
+    "pbxnativetargets": "//tools/generators/pbxnativetargets",
     "pbxproj_prefix": "//tools/generators/pbxproj_prefix",
     "pbxproject_targets": "//tools/generators/pbxproject_targets",
     "swiftc_stub": "//tools/swiftc_stub:swiftc",
@@ -14,6 +15,10 @@ _TESTS = {
     "files_and_groups": [
         "//tools/generators/lib/PBXProj:PBXProjTests",
         "//tools/generators/files_and_groups:files_and_groups_tests",
+    ],
+    "pbxnativetargets": [
+        "//tools/generators/lib/PBXProj:PBXProjTests",
+        "//tools/generators/pbxnativetargets:pbxnativetargets_tests",
     ],
     "pbxproj_prefix": [
         "//tools/generators/lib/PBXProj:PBXProjTests",
@@ -67,6 +72,89 @@ _SCHEMES = [
         ),
         test_action = xcode_schemes.test_action(
             _TESTS["files_and_groups"],
+            diagnostics = _SCHEME_DIAGNOSTICS,
+        ),
+    ),
+    xcode_schemes.scheme(
+        name = "pbxnativetargets",
+        launch_action = xcode_schemes.launch_action(
+            _TOOLS["pbxnativetargets"],
+            args = [
+                # targetsOutputPath
+                "/tmp/pbxproj_partials/pbxnativetargets/0",
+                # buildfileMapOutputPath
+                "/tmp/pbxproj_partials/buildfile_maps/0",
+                # xcshemesOutputDirectory
+                "/tmp/pbxproj_partials/automatic_xcschemes/0",
+                # consolidationMap
+                "/tmp/pbxproj_partials/consolidation_maps/0",
+                # hostedTargets
+                # targets
+                "--targets",
+                "//tools/generators/legacy:generator applebin_macos-darwin_x86_64-dbg-STABLE-3",
+                "//tools/generators/legacy/test:tests.__internal__.__test_bundle applebin_macos-darwin_x86_64-dbg-STABLE-3",
+                "//tools/generators/legacy:generator.library macos-x86_64-min12.0-applebin_macos-darwin_x86_64-dbg-STABLE-1",
+                # productTypes
+                "--product-types",
+                "com.apple.product-type.tool",
+                "com.apple.product-type.bundle.unit-test",
+                "com.apple.product-type.library.static",
+                # productPaths
+                "--product-paths",
+                "bazel-out/applebin_macos-darwin_x86_64-dbg-STABLE-3/bin/tools/generators/legacy/generator",
+                "bazel-out/applebin_macos-darwin_x86_64-dbg-STABLE-3/bin/tools/generators/legacy/test/tests.__internal__.__test_bundle_archive-root/tests.xctest",
+                "bazel-out/macos-x86_64-min12.0-applebin_macos-darwin_x86_64-dbg-STABLE-1/bin/tools/generators/legacy/libgenerator.library.a",
+                # platforms
+                "--platforms",
+                "macosx",
+                "macosx",
+                "macosx",
+                # osVersions
+                "--os-versions",
+                "12.0",
+                "12.0",
+                "12.0",
+                # archs
+                "--archs",
+                "x86_64",
+                "x86_64",
+                "x86_64",
+                # srcsCounts
+                "--srcs-counts",
+                "0",
+                "2",
+                "3",
+                # srcs
+                "--srcs",
+                "tools/generators/legacy/test/AddTargetsTests.swift",
+                "tools/generators/legacy/test/Array+ExtensionsTests.swift",
+                "tools/generators/legacy/src/BuildSettingConditional.swift",
+                "tools/generators/legacy/src/DTO/BazelLabel.swift",
+                "tools/generators/legacy/src/DTO/BuildSetting.swift",
+                # nonArcSrcsCounts
+                # nonArcSrcs
+                # hdrsCounts
+                # hdrs
+                # resourcesCounts
+                # resources
+                # folderResourcesCounts
+                # folderResources
+                # outputProductFilenames
+                "--output-product-filenames",
+                "generator_codesigned",
+                "tests.xctest",
+                "",
+                # dsymPaths
+                "--dysm-paths",
+                "",
+                "",
+                "",
+            ],
+            build_configuration = "Release",
+            diagnostics = _SCHEME_DIAGNOSTICS,
+        ),
+        test_action = xcode_schemes.test_action(
+            _TESTS["pbxnativetargets"],
             diagnostics = _SCHEME_DIAGNOSTICS,
         ),
     ),
