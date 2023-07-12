@@ -319,7 +319,7 @@ extension XCScheme.TestAction {
             testables: testActionInfo.targetInfos
                 .filter(\.pbxTarget.isTestable)
                 .sortedLocalizedStandard(\.pbxTarget.name)
-                .map { .init(skipped: false, buildableReference: $0.buildableReference) },
+                .map { .init(skipped: false, parallelizable: true, buildableReference: $0.buildableReference) },
             preActions: testActionInfo.preActions.map(\.executionAction) +
                 otherPreActions,
             postActions: testActionInfo.postActions.map(\.executionAction),
